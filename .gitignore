@@ -216,3 +216,9 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Project data files (large, not versioned)
+data/*.csv
+data/*.npy
+outputs/models/*.pkl
+.DS_Store
