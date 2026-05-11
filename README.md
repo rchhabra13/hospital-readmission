@@ -166,4 +166,4 @@ The ceiling across all models (F1 ~0.26, AUC ~0.64) is consistent with published
 
 ---
 
-*MIS 637 B · Stevens Institute of Technology · Spring 2025*
+*MIS 637 B · Stevens Institute of Technology · Spring 2026*
