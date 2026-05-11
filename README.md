@@ -1,46 +1,38 @@
 # Hospital Readmission Prediction
 
-**MIS 637 B — Stevens Institute of Technology**  
-**Group 7**
+Predicting 30-day diabetic patient readmissions using a full data mining pipeline — clustering, classification, and association rule mining on 101,766 real hospital encounters.
 
-| Name | Role |
+**MIS 637 B — Data Mining · Stevens Institute of Technology · Spring 2025**
+
+| | |
 |---|---|
-| Sujay Bhagawan Ghadge | Clustering & Data Analysis |
-| Rishi Chhabra | Classification Models & Evaluation |
-| Aditya Singh | Data Preprocessing & PCA |
-| Purva Sarode | Visualization & Reporting |
+| **Group 7** | Sujay Bhagawan Ghadge · Aditya Singh · Rishi Chhabra · Purva Sarode |
+| **Dataset** | [Diabetes 130-US Hospitals (UCI ML Repository)](https://archive.ics.uci.edu/dataset/296) |
+| **Stack** | Python · scikit-learn · XGBoost · imbalanced-learn · mlxtend |
 
 ---
 
-## Problem Statement
+## The Problem
 
-Hospital readmissions within 30 days are one of the biggest challenges in healthcare today, costing the U.S. system approximately **$26 billion annually**. For our MIS 637 project, we wanted to apply data mining techniques to this real-world problem — specifically, predicting whether a diabetic patient will be readmitted to the hospital within 30 days of discharge.
+Hospital readmissions within 30 days cost the U.S. healthcare system roughly **$26 billion per year**. If a model can flag high-risk diabetic patients before discharge, clinicians can intervene early and potentially prevent that readmission.
 
-The idea is that if we can flag high-risk patients before they leave, clinicians can intervene early and hopefully prevent that readmission. We used a publicly available dataset from the UCI Machine Learning Repository and built a full pipeline from raw data all the way to model evaluation.
-
-Our three main goals were:
-- Use **clustering** to discover hidden patient risk patterns we wouldn't see otherwise
-- **Train and compare 6 classification algorithms** to find the best predictor
-- **Evaluate every model** thoroughly using Accuracy, Precision, Recall, F1, Confusion Matrix, and ROC Curves
+The dataset has a natural difficulty: only **11.2% of encounters are positive class** (`<30d` readmission). Any model that blindly predicts "not readmitted" hits 88.8% accuracy — and catches exactly zero high-risk patients. The real challenge is building something that actually works on the minority class.
 
 ---
 
 ## Dataset
 
-We used the **Diabetes 130-US Hospitals (1999–2008)** dataset from the UCI Machine Learning Repository.
+101,766 patient encounters from 130 U.S. hospitals, 1999–2008.
 
-| Property | Details |
+| Property | Value |
 |---|---|
-| Source | UCI Machine Learning Repository |
-| Records | 101,766 patient encounters |
-| Features | 50 attributes per record |
-| Target | `readmitted`: `<30` days / `>30` days / `No` |
-| Format | CSV, free and publicly available |
-| URL | https://archive.ics.uci.edu/dataset/296 |
+| Records | 101,766 |
+| Features | 50 (demographics, diagnoses, medications, visit history) |
+| Target | `readmitted` — binarized to `1 = <30 days`, `0 = otherwise` |
+| Class split | 11.2% positive · 88.8% negative |
+| Source | [archive.ics.uci.edu/dataset/296](https://archive.ics.uci.edu/dataset/296) |
 
-The dataset has things like patient demographics, diagnoses codes, lab results, medications, and prior hospital visits. The target we cared about was binarized to **1 = readmitted within 30 days, 0 = everything else**.
-
-One thing we noticed right away: only about **11% of records are positive class** (`<30`). This class imbalance was a big challenge and we had to deal with it using SMOTE during classification.
+![Class Distribution](outputs/figures/class_distribution.png)
 
 ---
 
@@ -48,227 +40,130 @@ One thing we noticed right away: only about **11% of records are positive class*
 
 ```
 hospital-readmission/
-├── data/
-│   └── diabetic_data.csv          ← dataset goes here (not versioned)
 ├── notebooks/
-│   ├── 01_preprocessing.ipynb     ← Phase 1
-│   ├── 02_clustering.ipynb        ← Phase 2
-│   ├── 03_classification.ipynb    ← Phase 3
-│   └── 04_evaluation.ipynb        ← Phase 4
+│   └── MIS637_Hospital_Readmission_Project_Final.ipynb   ← single self-contained notebook
 ├── outputs/
-│   ├── figures/                   ← all plots saved here
-│   │   ├── class_distribution.png
-│   │   ├── pca_scree.png
-│   │   ├── kmeans_selection.png
-│   │   ├── kmeans_clusters.png
-│   │   ├── dendrogram.png
-│   │   ├── confusion_matrices.png
-│   │   ├── roc_curves.png
-│   │   └── model_comparison_bar.png
-│   ├── models/                    ← saved model pickles
-│   └── model_comparison.csv       ← final results table
+│   ├── figures/          ← all plots (auto-saved by notebook)
+│   └── models/           ← trained model pickles
+├── data/
+│   └── diabetic_data.csv ← auto-downloaded if missing
 ├── requirements.txt
 └── README.md
 ```
 
 ---
 
-## Setup & How to Run
-
-### 1. Clone the repo
+## Setup
 
 ```bash
 git clone https://github.com/rchhabra13/hospital-readmission.git
 cd hospital-readmission
+
+python3 -m venv .venv
+source .venv/bin/activate
+
+pip install -r requirements.txt
+jupyter notebook notebooks/MIS637_Hospital_Readmission_Project_Final.ipynb
 ```
 
-### 2. Install dependencies
-
-```bash
-pip3 install -r requirements.txt
-```
-
-Dependencies include: `pandas`, `numpy`, `scikit-learn`, `matplotlib`, `seaborn`, `jupyter`, `imbalanced-learn`, `scipy`
-
-### 3. Get the dataset
-
-Download `diabetic_data.csv` from https://archive.ics.uci.edu/dataset/296 and place it in the `data/` folder.
-
-```
-data/diabetic_data.csv
-```
-
-### 4. Run the notebooks in order
-
-You can run them one by one in Jupyter:
-
-```bash
-jupyter notebook
-```
-
-Or execute all at once from the terminal:
-
-```bash
-jupyter nbconvert --to notebook --execute --inplace notebooks/01_preprocessing.ipynb
-jupyter nbconvert --to notebook --execute --inplace notebooks/02_clustering.ipynb
-jupyter nbconvert --to notebook --execute --inplace notebooks/03_classification.ipynb
-jupyter nbconvert --to notebook --execute --inplace notebooks/04_evaluation.ipynb
-```
-
-Each notebook saves its outputs (figures, arrays, models) so the next one can pick up where it left off.
+The notebook installs its own dependencies (Cell 1) and downloads the dataset automatically if `data/diabetic_data.csv` is not found — no manual setup required. Works on Google Colab too.
 
 ---
 
-## Methodology — 4 Phase Approach
+## Pipeline
 
-### Phase 1 — Data Preprocessing (`01_preprocessing.ipynb`)
+### Phase 1 — Preprocessing
 
-The raw dataset had a few issues we had to handle:
+- Missing values encoded as `'?'` — replaced with `NaN`, columns >40% missing dropped (`weight`, `payer_code`, `medical_specialty`)
+- Remaining NaN imputed: median for numeric, mode for categorical — **all 101,766 rows preserved**
+- Age bracket → ordinal integer (0–9); nominal columns (`race`, `gender`, `diag_1/2/3`) → one-hot encoded
+- 5 engineered features: `total_visits`, `medication_per_day`, `lab_per_day`, `diag_med_ratio`, `prior_inpatient_flag`
+- Leakage-free pipeline: split → fit scaler on train → SMOTE on train → fit PCA on train
 
-- **Missing values**: The dataset uses `?` for missing data (not `NaN`). We replaced them and dropped columns with more than 40% missing — specifically `weight`, `payer_code`, and `medical_specialty`.
-- **Dropped non-predictive columns**: `encounter_id` and `patient_nbr` are just IDs and don't help a model.
-- **Target binarization**: We collapsed the 3-class target (`<30`, `>30`, `No`) into a binary problem: `1` if readmitted within 30 days, `0` otherwise.
-- **Categorical encoding**: Used `LabelEncoder` on all object columns.
-- **PCA**: Applied `StandardScaler` then PCA keeping 95% of variance, reducing the feature space significantly. This output is used for clustering in Phase 2.
+### Phase 2 — Clustering
 
-All preprocessed arrays (`X_scaled.npy`, `X_pca.npy`, `y.npy`) are saved to `data/` so we don't have to redo this every time.
+K = 4 detected automatically via the second-derivative elbow method. Four natural patient risk groups emerged.
 
----
+![K-Means Cluster Selection](outputs/figures/kmeans_selection.png)
 
-### Phase 2 — Clustering (`02_clustering.ipynb`)
+![K-Means Clusters](outputs/figures/kmeans_clusters.png)
 
-We wanted to see if there were natural patient groupings in the data before throwing everything at a classifier.
+| Cluster | Patients | Readmission Rate |
+|---|---|---|
+| 0 | 52,017 | 8.15% |
+| 1 | 85 | 5.88% |
+| 2 | 3 | 0.00% |
+| **3** | **49,661** | **14.33% ← highest risk** |
 
-**K-Means Clustering**
-- Ran K-Means for K = 2 through 10
-- Used the Elbow Method (inertia) and Silhouette Score to pick the best K
-- Settled on **K = 3 clusters** based on the plots
-- Visualized clusters on the first two PCA components
+Hierarchical clustering (Ward linkage, 200-patient sample) confirmed the same natural groupings.
 
-**Readmission rate per K-Means cluster:**
+![Dendrogram](outputs/figures/dendrogram.png)
 
-| Cluster | Readmit Rate (<30d) |
-|---|---|
-| 0 | Low risk |
-| 1 | Medium risk |
-| 2 | Highest risk |
+### Phase 3 — Classification
 
-(Exact rates shown in the notebook output)
+7 classifiers trained with `class_weight='balanced'` and SMOTE on the training fold. Each model's decision threshold is optimized independently (maximizing F1) rather than using a fixed 0.5 cutoff.
 
-**Hierarchical Clustering**
-- Used Ward linkage on a random sample of 500 patients (full dataset too large for a dendrogram)
-- Dendrogram shows clear split into 3 natural groups, consistent with K-Means findings
-- Also fit `AgglomerativeClustering` on full data for cluster-level readmission rate comparison
+![PCA Scree](outputs/figures/pca_scree.png)
 
----
+### Phase 4 — Association Rules
 
-### Phase 3 — Classification (`03_classification.ipynb`)
+Apriori run on the `<30d` readmission subset to discover frequent medication co-occurrence patterns.
 
-We trained 6 classifiers. Because the dataset is heavily imbalanced (~89% negative class), we applied **SMOTE** (Synthetic Minority Over-sampling Technique) on the training set before fitting any model.
+- **25** frequent itemsets · **35** rules
+- Thresholds: support ≥ 0.10 · confidence ≥ 0.60 · lift ≥ 1.20
+- Top rule: `metformin → {diabetesMed_Yes, medication_changed}` — Support 0.135 · Confidence 0.793 · Lift 1.621
 
-**Train/Test split:** 80/20 stratified
+### Phase 5 — Evaluation
 
-| Classifier | Configuration |
-|---|---|
-| Decision Tree (C4.5) | `criterion='entropy'`, `max_depth=10` |
-| Neural Network (BP) | `MLPClassifier`, 2 hidden layers (100, 50), 300 iterations |
-| Naïve Bayes | `GaussianNB` |
-| KNN | `k=5` |
-| Logistic Regression | `max_iter=1000` |
-| Random Forest | 100 trees |
+![Model Comparison](outputs/figures/model_comparison_bar.png)
 
-All trained models are saved to `outputs/models/all_models.pkl`.
+![ROC Curves](outputs/figures/roc_curves.png)
 
----
-
-### Phase 4 — Model Evaluation (`04_evaluation.ipynb`)
-
-We evaluated every model using the full set of metrics from our proposal.
-
-**Why Recall matters most here:** In a medical context, a **False Negative** (predicting a patient won't be readmitted when they actually will be) is the worst outcome. That patient gets no extra intervention and ends up back in the hospital. So we cared a lot about Recall, not just Accuracy.
+![Confusion Matrices](outputs/figures/confusion_matrices.png)
 
 ---
 
 ## Results
 
-### Model Comparison
+| Model | Accuracy | Precision | Recall | F1 | ROC-AUC | Threshold |
+|---|---|---|---|---|---|---|
+| Decision Tree (C4.5) | 68.7% | 0.166 | 0.449 | 0.243 | 0.607 | 0.578 |
+| Neural Network (BP) | 46.7% | 0.127 | 0.639 | 0.211 | 0.553 | 0.003 |
+| Naïve Bayes | 11.6% | 0.112 | **0.997** | 0.201 | 0.516 | 0.000 |
+| kNN (k=3) | 54.5% | 0.131 | 0.545 | 0.211 | 0.549 | 0.333 |
+| **Logistic Regression** | 70.4% | **0.183** | 0.477 | **0.264** | **0.640** | 0.541 |
+| Random Forest | 68.5% | 0.171 | 0.472 | 0.251 | 0.632 | 0.496 |
+| XGBoost | **74.2%** | 0.177 | 0.361 | 0.238 | 0.608 | 0.886 |
 
-| Model | Accuracy | Precision | Recall | F1 | ROC-AUC |
-|---|---|---|---|---|---|
-| Decision Tree (C4.5) | 0.8778 | 0.3277 | 0.1036 | 0.1574 | 0.6233 |
-| Neural Network (BP) | 0.7722 | 0.1486 | 0.2256 | 0.1792 | 0.5552 |
-| Naïve Bayes | 0.1139 | 0.1101 | **0.9946** | 0.1983 | 0.5886 |
-| KNN | 0.6326 | 0.1368 | 0.4398 | 0.2087 | 0.5609 |
-| **Logistic Regression** | 0.6487 | 0.1628 | 0.5280 | **0.2488** | **0.6290** |
-| Random Forest | **0.8883** | **0.4118** | 0.0322 | 0.0598 | 0.6250 |
+**Logistic Regression** is the recommended model — best F1 (0.264) and ROC-AUC (0.640) across all seven classifiers.
 
-### Key Takeaways
+**XGBoost** has the highest raw accuracy (74.2%) but its optimal threshold (0.886) is very conservative — it only catches 36% of actual readmissions, making it less useful as a screening tool.
 
-**Logistic Regression is our recommended model** for this use case. It achieved the best F1 score (0.2488) and highest ROC-AUC (0.629) while maintaining a reasonable Recall of 52.8%. Given that our priority is minimizing false negatives (missed high-risk patients), F1 and Recall are the metrics that matter most here.
+**Naïve Bayes** hits near-perfect Recall (99.7%) by flagging almost everyone as positive — its 11.6% accuracy is essentially the base rate, so it adds no real discriminative value.
 
-**Random Forest had the highest raw accuracy (88.8%) and precision (41.2%)** but only caught 3.2% of actual readmissions. For a medical intervention tool, this is essentially useless — almost every high-risk patient gets missed.
-
-**Naïve Bayes caught almost every readmission (Recall = 99.5%)** but flagged nearly everyone as high-risk. Its 11.4% accuracy means it's basically predicting the positive class for everyone, which defeats the purpose.
-
-**The core challenge is class imbalance.** Only ~11% of encounters are `<30d` readmissions, even after SMOTE. Future work could explore better resampling strategies, cost-sensitive learning, or ensemble methods tuned for Recall.
+The ceiling across all models (F1 ~0.26, AUC ~0.64) is consistent with published results on this dataset and reflects the absence of clinical notes, lab trends, and social determinants in administrative EHR data.
 
 ---
 
-## Evaluation Metrics Explained
+## Tech Stack
 
-We used the following metrics, as defined in our project proposal:
-
-| Metric | Formula | What it tells us |
-|---|---|---|
-| Accuracy | (TP + TN) / (TP + TN + FP + FN) | Overall correct predictions |
-| Precision | TP / (TP + FP) | Of patients flagged high-risk, how many actually were |
-| Recall | TP / (TP + FN) | Of all true high-risk patients, how many we caught |
-| F1 Score | 2 × (Precision × Recall) / (Precision + Recall) | Harmonic mean of Precision and Recall |
-| ROC-AUC | Area under TPR vs FPR curve | Model's ability to discriminate between classes |
-
-**In the medical context: False Negatives are the most costly error.** A missed high-risk patient receives no additional monitoring or intervention, which can lead to adverse outcomes.
-
----
-
-## Figures Generated
-
-All figures are saved to `outputs/figures/`:
-
-| File | Description |
+| | |
 |---|---|
-| `class_distribution.png` | Class imbalance visualization |
-| `pca_scree.png` | Cumulative explained variance — shows how many PCA components to keep |
-| `kmeans_selection.png` | Elbow + Silhouette plots for choosing K |
-| `kmeans_clusters.png` | Scatter of clusters on first 2 PCA components |
-| `dendrogram.png` | Hierarchical clustering dendrogram (500-patient sample) |
-| `confusion_matrices.png` | Side-by-side confusion matrices for all 6 models |
-| `roc_curves.png` | ROC curves with AUC for all models on one plot |
-| `model_comparison_bar.png` | Bar chart comparing all 5 metrics across all models |
-
----
-
-## Tools & Technologies
-
-| Tool | Purpose |
-|---|---|
-| Python 3 | Core language |
-| pandas | Data loading and manipulation |
-| numpy | Array operations |
-| scikit-learn | Preprocessing, clustering, classification, evaluation |
-| imbalanced-learn | SMOTE for handling class imbalance |
-| matplotlib / seaborn | All visualizations |
-| scipy | Hierarchical clustering (linkage, dendrogram) |
-| Jupyter Notebook | Interactive analysis and documentation |
-| Microsoft Excel | Initial data exploration and profiling |
+| **Language** | Python 3 |
+| **Data** | pandas, numpy |
+| **ML** | scikit-learn, XGBoost, imbalanced-learn (SMOTE) |
+| **Association Rules** | mlxtend |
+| **Visualization** | matplotlib, seaborn |
+| **Clustering** | scikit-learn (KMeans, Agglomerative), scipy (dendrogram) |
 
 ---
 
 ## References
 
 - Strack, B. et al. (2014). *Impact of HbA1c Measurement on Hospital Readmission Rates.* BioMed Research International.
-- UCI ML Repository: https://archive.ics.uci.edu/dataset/296
 - Chawla, N.V. et al. (2002). *SMOTE: Synthetic Minority Over-sampling Technique.* JAIR.
+- UCI ML Repository — [Diabetes 130-US Hospitals Dataset](https://archive.ics.uci.edu/dataset/296)
 
 ---
 
-*MIS 637 B — Data Mining | Stevens Institute of Technology | Spring 2025*
+*MIS 637 B · Stevens Institute of Technology · Spring 2025*
