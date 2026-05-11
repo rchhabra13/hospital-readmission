@@ -41,7 +41,7 @@ The dataset has a natural difficulty: only **11.2% of encounters are positive cl
 ```
 hospital-readmission/
 ├── notebooks/
-│   └── MIS637_Hospital_Readmission_Project_Final.ipynb   ← single self-contained notebook
+│   └── MIS637_Hospital_Readmission_Project_Final.ipynb
 ├── outputs/
 │   ├── figures/          ← all plots (auto-saved by notebook)
 │   └── models/           ← trained model pickles
